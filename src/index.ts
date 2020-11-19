@@ -1,27 +1,29 @@
-export * from './countTime';
+export * from './app';
 import prompts from 'prompts';
 
-import { resolve } from 'path';
-import { config } from 'dotenv';
-config({ path: resolve(__dirname, '../.env') });
+import { 
+    usernameMode,
+    loginMode
+} from './';
 
-import { printUserHours } from './';
+export async function main() : Promise<void>{
+    const modeResponse = await prompts({
+        type: 'number',
+        name: 'mode',
+        message: 'Choose the mode of the program\n1 - get hours from username'
+    }); 
 
-export async function main() {
-    const response = await prompts([{
-            type: 'text',
-            name: 'login',
-            message: 'Input your login: '
-        },
-        {
-            type: 'password',
-            name: 'password',
-            message: 'Input your password: '
-        },
-    ]);
-
-    console.log(`User: ${response.login? response.login: process.env.TAIGA_LOGIN}`);
-    printUserHours(response.login, response.password);
+    if (modeResponse.mode == 1) {
+        await usernameMode()
+    } //
+    //\n2 - get hours with authentication
+    //else if (modeResponse.mode == 2) {
+    //     await loginMode();
+    // }    
 }
 
-main();
+(async() => { 
+    await main();    
+})().catch((err: unknown) => {
+    console.log(err);
+});
