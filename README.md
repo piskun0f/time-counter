@@ -1,5 +1,7 @@
 # Time counter
 
+The program print the time that was spent on all tasks in Taiga MIEM
+
 ## .env
 ```
 TAIGA_URL=https://track.miem.hse.ru
