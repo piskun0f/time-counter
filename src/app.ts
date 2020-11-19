@@ -6,11 +6,9 @@ import {
     Task
 } from 'taigaio-client';
 
-async function getIdByUsername(client: TaigaAuthClient|TaigaBaseClient, username: string) : Promise<number|undefined> {
-    console.log(await client.getAllUsersContactDetail(18));
-    
-    return (await client.getAllUsersContactDetail())?.find(user => {
-        return user.username = username;
+async function getIdByUsername(client: TaigaAuthClient, username: string) : Promise<number|undefined> {   
+    return (await client.getAllUsersContactDetail())?.find((user: { username: string; }) => {
+        return user.username == username;
     })?.id;
 }
 
@@ -45,7 +43,7 @@ export async function getTaskLaboriousness(client: TaigaBaseClient|TaigaAuthClie
  * @param client - TaigaAuthClient
  * @returns - all users hours (academic = 40 min)
  */
-export async function getUserAcademicHoursByID(client: TaigaAuthClient|TaigaBaseClient, userId: number) : Promise<number|undefined> {
+export async function getUserAcademicHoursByID(client: TaigaAuthClient, userId: number) : Promise<number|undefined> {
     let hours = 0;              
     const myTasks = await client.getAllTasks({assigned_to: userId})
 
@@ -76,25 +74,33 @@ export async function getUserAcademicHoursByID(client: TaigaAuthClient|TaigaBase
  * TAIGA_LOGIN=login
  * TAIGA_PASSWORD=password
  */
-export async function auth(login?: string, password?: string) : Promise<TaigaAuthClient|undefined> {
+export async function auth(login: string, password: string) : Promise<TaigaAuthClient|undefined> {
     let client: TaigaAuthClient|undefined;
-    if (login && password) {
-        client = await TaigaClientFactory.createAuthClient('https://track.miem.hse.ru', login, password);
+    client = await TaigaClientFactory.createAuthClient('https://track.miem.hse.ru', login, password);
+    
+    if (client) {
+        console.log(`User ${login? login: process.env.TAIGA_LOGIN} logged in.`);       
     } else {
-        client = await TaigaClientFactory.createAuthClient();
+        console.log(`User ${login? login: process.env.TAIGA_LOGIN} is not logged in.`);  
     }
     return client;
 }
 
 /**
- * Print the time that was spent on all tasks
- * @hours - count of hours
+ * Print the time that was spent on all tasks * 
  */
-export async function printUserHours(hours: number) : Promise<void>{    
-    console.log(`Academic hours: ${hours} \nAstronomical hours: ${hours*2/3} \nCredits: ${hours/38}`)   
+export async function printUserHours(client: TaigaAuthClient, id: number, username: string) : Promise<void>{
+    const hours = await getUserAcademicHoursByID(client, id);
+    if (hours) {
+        console.log(`User ${username}\nAcademic hours: ${hours} \nAstronomical hours: ${hours*2/3} \nCredits: ${hours/38}`) 
+    } else {
+        console.log('The user do not have any hours.');
+    }
 }
 
-export async function loginMode() {
+export async function main() : Promise<void> {
+    console.log('The program prints the time spent on all tasks in the MIEM taiga.\nFirst, log in to the Taiga.');
+    
     const loginResponse = await prompts([
         {
             type: 'text',
@@ -108,57 +114,46 @@ export async function loginMode() {
         },
     ]);   
 
-    console.log(`User: ${loginResponse.login? loginResponse.login: process.env.TAIGA_LOGIN}`);
+    const login = loginResponse.login;
+    const password = loginResponse.password;
 
-    const client = await auth(loginResponse.login, loginResponse.password);
-    if (client) {
-        const myID = (await client.getMeContactDetail())?.id; 
-        console.log((await client.getUserContactDetail(myID))?.username);
-
-        if (myID) {
-            const hours = await getUserAcademicHoursByID(client, myID);
-            if (hours) {
-                printUserHours(hours);
-            } else {
-                console.log('The user do not have any hours.');
-            }
-        } else {
-            console.log('Error: The user does not exist.');
-        }
-        
-    } else {
-        console.log('Error: failed to log in.');
-    }
-}
-
-export async function usernameMode() {
-    const usernameResponse = await prompts({
-        type: 'text',
-        name: 'username',
-        message: 'Input username: '
-    });
-    const username = usernameResponse.username;
+    const client = await auth(login, password);
     
-    if (username) {
-        console.log(`User: ${username? username: process.env.TAIGA_LOGIN}`);
-
-        const client = TaigaClientFactory.createBaseClient();
-        if (client) {
-            const id = await getIdByUsername(client, username);
-
-            if (id) {
-                const hours = await getUserAcademicHoursByID(client, id);
-                if (hours) {
-                    printUserHours(hours);
+    if (client) {
+        while (true) {
+            const modeResponse = await prompts({
+                type: 'number',
+                name: 'mode',
+                message: '\n\nWhat do you want?\n1 - Find out how many hours I have\n2 - Find out how many hours someone else has\nENTER - exit\n'
+            });
+    
+            if (modeResponse.mode == 1) {
+                const myID = (await client.getMeContactDetail())?.id;
+                if (myID) {
+                    await printUserHours(client, myID, login)
                 } else {
-                    console.log('The user do not have any hours.');
+                    console.log('Error: The user does not exist.');
+                }
+            } else if (modeResponse.mode == 2) {
+                const usernameResponse = await prompts({
+                    type: 'text',
+                    name: 'username',
+                    message: 'Input username:'
+                });
+                const username = usernameResponse.username;
+    
+                const id = await getIdByUsername(client, username);
+
+                if (id) {
+                    await printUserHours(client, id, username)
+                } else {
+                    console.log('Error: The user does not exist.');
                 }
             } else {
-                console.log('Error: The user does not exist.');
+                return;
             }
-            
-        } else {
-            console.log('Error: failed to create base client.');
-        }    
+        }  
+    } else {
+        console.log('Error: failed to log in.');
     }
 }
