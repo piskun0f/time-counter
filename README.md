@@ -15,5 +15,5 @@ printHours();
 
 ## manual input
 ``` typescript
-printHours(true, login, password);
+printHours(login, password);
 ```
