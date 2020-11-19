@@ -38,24 +38,41 @@ export async function getTaskLaboriousness(client: TaigaBaseClient|TaigaAuthClie
     return undefined;
 }
 
+export interface UserHours {
+    is_closed: number
+    not_closed: number
+}
+
 /**
  * Get the time that was spent on all tasks
  * @param client - TaigaAuthClient
  * @returns - all users hours (academic = 40 min)
  */
-export async function getUserAcademicHoursByID(client: TaigaAuthClient, userId: number) : Promise<number|undefined> {
-    let hours = 0;              
+export async function getUserAcademicHoursByID(client: TaigaAuthClient, userId: number) : Promise<UserHours|undefined> {
+    let hours = {
+        is_closed: 0,
+        not_closed: 0
+    };              
     const myTasks = await client.getAllTasks({assigned_to: userId})
 
     if (myTasks) {
         for (let i = 0; i < myTasks.length; i++) {
             const task = myTasks[i];
-            let taskHours: number|undefined;
-            taskHours = await getTaskLaboriousness(client, task);
-            
-            if (taskHours) {                    
-                hours += taskHours;
-            }
+            if (task.is_closed) {
+                let taskHours: number|undefined;
+                taskHours = await getTaskLaboriousness(client, task);
+                
+                if (taskHours) {                    
+                    hours.is_closed += taskHours;
+                }
+            } else {
+                let taskHours: number|undefined;
+                taskHours = await getTaskLaboriousness(client, task);
+                
+                if (taskHours) {                    
+                    hours.not_closed += taskHours;
+                }
+            }        
         }
         return hours;
     }   
@@ -92,7 +109,8 @@ export async function auth(login: string, password: string) : Promise<TaigaAuthC
 export async function printUserHours(client: TaigaAuthClient, id: number, username: string) : Promise<void>{
     const hours = await getUserAcademicHoursByID(client, id);
     if (hours) {
-        console.log(`User ${username}\nAcademic hours: ${hours} \nAstronomical hours: ${hours*2/3} \nCredits: ${hours/38}`) 
+        console.log(`\nUser ${username}\n\nClosed:\nAcademic hours: ${hours.is_closed} \nAstronomical hours: ${hours.is_closed*2/3} \nCredits: ${hours.is_closed/38}`) 
+        console.log(`\nNot Closed:\nAcademic hours: ${hours.not_closed} \nAstronomical hours: ${hours.not_closed*2/3} \nCredits: ${hours.not_closed/38}`) 
     } else {
         console.log('The user do not have any hours.');
     }
@@ -121,10 +139,11 @@ export async function main() : Promise<void> {
     
     if (client) {
         while (true) {
+            console.log('\n\n');
             const modeResponse = await prompts({
                 type: 'number',
                 name: 'mode',
-                message: '\n\nWhat do you want?\n1 - Find out how many hours I have\n2 - Find out how many hours someone else has\nENTER - exit\n'
+                message: 'What do you want?\n1 - Find out how many hours I have\n2 - Find out how many hours someone else has\nENTER - exit\n'
             });
     
             if (modeResponse.mode == 1) {
