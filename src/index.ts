@@ -5,27 +5,23 @@ import { resolve } from 'path';
 import { config } from 'dotenv';
 config({ path: resolve(__dirname, '../.env') });
 
-import {  
-    printUserHours
-} from './';
+import { printUserHours } from './';
 
-export async function main(){      
-      const response = await prompts([
-        {
-          type: 'text',
-          name: 'login',
-          message: 'Input your login: '
+export async function main() {
+    const response = await prompts([{
+            type: 'text',
+            name: 'login',
+            message: 'Input your login: '
         },
         {
-          type: 'password',
-          name: 'password',
-          message: 'Input your password: '
+            type: 'password',
+            name: 'password',
+            message: 'Input your password: '
         },
-      ]);
+    ]);
 
-      
-      console.log(`User: ${response.login? response.login: process.env.TAIGA_LOGIN}`);
-      printUserHours(response.login, response.password);
+    console.log(`User: ${response.login? response.login: process.env.TAIGA_LOGIN}`);
+    printUserHours(response.login, response.password);
 }
 
 main();
