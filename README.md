@@ -2,18 +2,18 @@
 
 The program print the time that was spent on all tasks in Taiga MIEM
 
-## .env
+## How to run?
+```
+git clone https://github.com/piskun0f/time-counter.git
+npm i
+npm run build
+npm start
+```
+
+## If you do not want to input login and password
+### You should create '.env' file:
 ```
 TAIGA_URL=https://track.miem.hse.ru
 TAIGA_LOGIN=login
 TAIGA_PASSWORD=password
-```
-
-``` typescript
-printHours();
-```
-
-## manual input
-``` typescript
-printHours(login, password);
 ```
