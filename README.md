@@ -10,11 +10,3 @@ npm i
 npm run build
 npm start
 ```
-
-## If you do not want to input login and password
-### You should create '.env' file:
-```
-TAIGA_URL=https://track.miem.hse.ru
-TAIGA_LOGIN=login
-TAIGA_PASSWORD=password
-```
