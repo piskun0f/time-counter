@@ -10,7 +10,6 @@ async function getIdByUsername(client: TaigaClient, username: string) : Promise<
     })?.id;
 }
 
-
 /**
  * Get the time that was spent on this task
  * @param client - TaigaClient
@@ -36,9 +35,14 @@ export async function getTaskLabor(client: TaigaClient|TaigaClient, task: ITaskD
     return undefined;
 }
 
+export interface TaskHours {
+    subject: string
+    hours: number
+}
 export interface UserHours {
     closedHours: number
     notClosedHours: number
+    notClosedTasks: Array<TaskHours>
 }
 
 /**
@@ -47,9 +51,10 @@ export interface UserHours {
  * @returns - all users hours (academic = 40 min)
  */
 export async function getUserAcademicHoursByID(client: TaigaClient, userId: number) : Promise<UserHours|undefined> {
-    const hours = {
+    const result : UserHours = {
         closedHours: 0,
-        notClosedHours: 0
+        notClosedHours: 0,
+        notClosedTasks: []
     };
     const myTasks = await client.getTaskList({ assigned_to: userId });
 
@@ -60,17 +65,21 @@ export async function getUserAcademicHoursByID(client: TaigaClient, userId: numb
                 const taskHours = await getTaskLabor(client, task);
 
                 if (taskHours) {
-                    hours.closedHours += taskHours;
+                    result.closedHours += taskHours;
                 }
             } else {
                 const taskHours = await getTaskLabor(client, task);
 
                 if (taskHours) {
-                    hours.notClosedHours += taskHours;
+                    const taskDetail = await client.getTask(task.id);
+                    if (taskDetail) {
+                        result.notClosedTasks.push({ subject: taskDetail.subject, hours: taskHours });
+                    }
+                    result.notClosedHours += taskHours;
                 }
             }
         }
-        return hours;
+        return result;
     }
 
     return undefined;
@@ -107,6 +116,12 @@ export async function printUserHours(client: TaigaClient, id: number, username: 
     if (hours) {
         console.log(`\nUser ${username}\n\nClosed:\nAcademic hours: ${hours.closedHours} \nAstronomical hours: ${hours.closedHours * 2 / 3} \nCredits: ${hours.closedHours / 38}`);
         console.log(`\nNot Closed:\nAcademic hours: ${hours.notClosedHours} \nAstronomical hours: ${hours.notClosedHours * 2 / 3} \nCredits: ${hours.notClosedHours / 38}`);
+        if (hours.notClosedTasks.length != 0) {
+            console.log('\nNot closed tasks:');
+            hours.notClosedTasks.forEach(task => {
+                console.log(`${task.subject} - ${task.hours}`);
+            });
+        }
     } else {
         console.log('The user do not have any hours.');
     }
