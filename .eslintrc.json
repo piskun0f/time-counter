@@ -1,0 +1,147 @@
+{
+    "env": {
+        "commonjs": true,
+        "es6": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "project": "tsconfig.json",
+		"tsconfigRootDir": "."
+    },
+    "plugins": ["@typescript-eslint"],
+    "rules": {
+        "@typescript-eslint/await-thenable" : ["error"],
+        "@typescript-eslint/indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "@typescript-eslint/member-delimiter-style": [
+            "error",
+            {
+                "multiline": {
+                    "delimiter": "none",
+                    "requireLast": true
+                },
+                "singleline": {
+                    "delimiter": "semi",
+                    "requireLast": false
+                }
+            }
+        ],
+        "@typescript-eslint/method-signature-style": [
+            "error",
+            "property"
+        ],
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {
+                "selector": ["classProperty", "classMethod", "objectLiteralMethod"],
+                "modifiers": ["private"],
+                "leadingUnderscore": "require",
+                "format": ["camelCase"]
+            },
+            {
+                "selector": ["classProperty", "classMethod", "objectLiteralMethod"],
+                "modifiers": ["protected"],
+                "leadingUnderscore": "require",
+                "format": ["camelCase"]
+            },
+            {
+                "selector": ["variable", "function", "parameter"],
+                "leadingUnderscore": "forbid",
+                "format": ["camelCase"]
+            },
+            {
+                "selector": ["classProperty", "classMethod", "objectLiteralMethod"],
+                "leadingUnderscore": "forbid",
+                "format": ["camelCase"]
+            },
+            {
+                "selector": ["variable"],
+                "format": ["camelCase", "PascalCase"], // For global consts
+                "modifiers": ["const"]
+            },
+            {
+                "selector": ["class", "interface", "enum"],
+                "format": ["PascalCase"]
+            },
+            {
+                "selector": ["enumMember"],
+                "format": ["UPPER_CASE"]
+            }
+        ],
+        "@typescript-eslint/no-empty-function": [
+            "error",
+            {
+                "allow": ["constructors"]
+            }
+        ],
+        "@typescript-eslint/no-empty-interface": "error",
+        "@typescript-eslint/no-explicit-any" : "error",
+        "@typescript-eslint/no-extraneous-class": "error",
+        "@typescript-eslint/no-for-in-array": "error",
+        "@typescript-eslint/no-misused-new": "error",
+        "@typescript-eslint/no-misused-promises": "off",
+        "@typescript-eslint/no-unnecessary-boolean-literal-compare": "error",
+        "@typescript-eslint/no-unsafe-assignment": 0,
+
+        "arrow-spacing": [
+            "error",
+            {
+                "before": true,
+                "after": true
+            }
+        ],
+        "comma-spacing":"error",
+        "eol-last": "error",
+        "key-spacing": [
+            "error",
+            {
+                "beforeColon": false,
+                "afterColon": true
+            }
+        ],
+        "no-multiple-empty-lines" : [
+            "error",
+            {"max" : 2}
+        ],
+        "no-trailing-spaces": "error",
+        "object-curly-spacing": [
+            "error",
+            "always"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "space-before-blocks": 2,
+        "space-before-function-paren": [
+            "error",
+            {
+            "anonymous": "never",
+            "named": "never",
+            "asyncArrow": "always"
+            }
+        ],
+        "space-infix-ops":"error",
+        "spaced-comment": [
+            "warn",
+            "always"
+        ]
+    }
+}
