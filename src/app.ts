@@ -56,9 +56,14 @@ export async function getUserAcademicHoursByID(client: TaigaClient, userId: numb
         notClosedHours: 0,
         notClosedTasks: []
     };
-    const myTasks = await client.getTaskList({ assigned_to: userId });
+    let myTasks = await client.getTaskList({ assigned_to: userId });
 
     if (myTasks) {
+        const startDate = process.env.START_DATE;
+        if (startDate) {
+            myTasks = myTasks.filter((t) => new Date(t.modified_date) > new Date(startDate));
+        }
+
         for (let i = 0; i < myTasks.length; i++) {
             const task = myTasks[i];
             if (task.is_closed) {

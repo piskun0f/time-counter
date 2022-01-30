@@ -6,7 +6,8 @@
     "scripts": {
         "lint": "eslint src",
         "build": "tsc",
-        "start": "node ./dist"
+        "start": "node ./dist",
+        "dev": "npm run build && npm start"
     },
     "author": {
         "name": "Andrew Piskunov",
