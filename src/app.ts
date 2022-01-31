@@ -1,11 +1,17 @@
 import prompts from 'prompts';
 import {
     TaigaClient,
-    ITaskDetail
+    ITaskDetail,
+    IUserDetail
 } from 'taigaio-client';
 
-async function getIdByUsername(client: TaigaClient, username: string) : Promise<number|undefined> {
-    return (await client.getUserList())?.find((user: { username: string }) => {
+let users: IUserDetail[] | undefined = undefined;
+
+export async function getIdByUsername(client: TaigaClient, username: string) : Promise<number|undefined> {
+    if (!users) {
+        users = await client.getUserList();
+    }
+    return users?.find((user: IUserDetail) => {
         return user.username == username;
     })?.id;
 }
